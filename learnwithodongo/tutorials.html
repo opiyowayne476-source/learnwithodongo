@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LearnWithOdongo — Tutorials</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"/>
+</head>
+<body>
+
+<div id="sidebar-overlay"></div>
+<nav id="sidebar">
+  <button id="sidebar-close" class="sidebar-close">✕</button>
+  <div class="sidebar-logo">Learn<span>WithOdongo</span></div>
+  <ul class="sidebar-nav">
+    <li><a href="index.html">🏠 <span>Home</span></a></li>
+    <li><a href="documents.html">📄 <span>Documents</span></a></li>
+    <li><a href="tutorials.html">🎬 <span>Tutorials</span></a></li>
+    <li><a href="exercises.html">📝 <span>Exercises</span></a></li>
+    <li class="admin-link"><a href="admin.html">⚙️ <span>Admin</span></a></li>
+  </ul>
+</nav>
+
+<header id="topbar">
+  <button id="menu-btn">☰</button>
+  <span class="topbar-title">Learn<span>WithOdongo</span></span>
+</header>
+
+<main class="main-content">
+
+  <div class="page-header">
+    <h1>🎬 Tutorial Series</h1>
+    <p>Watch video lessons — your progress is saved automatically in each series</p>
+  </div>
+
+  <div id="series-container">
+    <div style="text-align:center;color:var(--muted);padding:80px">Loading tutorials…</div>
+  </div>
+
+</main>
+
+<!-- Video Player Modal -->
+<div class="video-modal-overlay" id="video-modal">
+  <div class="video-modal">
+    <div class="video-modal-header">
+      <h3 id="video-title">Video</h3>
+      <button class="video-close-btn" id="video-close">✕</button>
+    </div>
+    <div class="video-wrapper" id="video-wrapper">
+      <!-- iframe or video injected here -->
+    </div>
+    <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div style="font-size:0.82rem;color:rgba(255,255,255,0.5)" id="video-meta"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary btn-sm" id="prev-btn">← Prev</button>
+        <button class="btn btn-primary btn-sm" id="next-btn">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+// Progress stored in localStorage: { seriesId: Set of watched video IDs }
+function getWatched(seriesId) {
+  try { return new Set(JSON.parse(localStorage.getItem('watched_' + seriesId) || '[]')); }
+  catch { return new Set(); }
+}
+function markWatched(seriesId, videoId) {
+  const s = getWatched(seriesId);
+  s.add(videoId);
+  localStorage.setItem('watched_' + seriesId, JSON.stringify([...s]));
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function isYouTube(url) { return url && (url.includes('youtube.com') || url.includes('youtu.be')); }
+
+function ytEmbedUrl(url) {
+  let id = '';
+  if (url.includes('youtu.be/')) id = url.split('youtu.be/')[1].split('?')[0];
+  else if (url.includes('v=')) id = url.split('v=')[1].split('&')[0];
+  return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : url;
+}
+
+// Global state for next/prev nav
+let currentPlaylist = [];
+let currentIndex   = 0;
+let currentSeries  = '';
+
+async function loadTutorials() {
+  try {
+    const tutorials = await sbFetch('tutorials?select=*&order=series_name,order_num');
+
+    // Group by series
+    const groups = {};
+    tutorials.forEach(t => {
+      const key = t.series_name || 'Standalone Videos';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(t);
+    });
+
+    const container = document.getElementById('series-container');
+    container.innerHTML = '';
+
+    if (!Object.keys(groups).length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:80px">No tutorials uploaded yet.</div>';
+      return;
+    }
+
+    Object.entries(groups).forEach(([seriesName, videos]) => {
+      const seriesId = seriesName.replace(/\s+/g, '_');
+      const watched  = getWatched(seriesId);
+      const pct      = Math.round((watched.size / videos.length) * 100);
+
+      const block = document.createElement('div');
+      block.className = 'series-block card';
+      block.style.marginBottom = '28px';
+
+      block.innerHTML = `
+        <div class="series-header">
+          <h2>📺 ${escHtml(seriesName)}</h2>
+          <span style="font-size:0.82rem;color:var(--muted)">${videos.length} video${videos.length>1?'s':''}</span>
+        </div>
+        <p class="progress-label">${watched.size} of ${videos.length} watched</p>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="prog-${seriesId}" style="width:${pct}%"></div>
+        </div>
+        <div class="tutorial-list" id="list-${seriesId}">
+          ${videos.map((v, i) => {
+            const done = watched.has(String(v.id));
+            return `
+              <div class="tutorial-item ${done ? 'watched' : ''}" id="item-${v.id}"
+                   onclick="playVideo('${seriesId}', ${i}, ${JSON.stringify(videos).replace(/"/g,"&quot;")})">
+                <div class="tutorial-thumb">${done ? '✓' : '▶'}</div>
+                <div class="tutorial-info">
+                  <h4>${escHtml(v.title)}</h4>
+                  <span>${escHtml(v.duration || '')}${v.description ? ' — ' + escHtml(v.description.slice(0,60)) : ''}</span>
+                </div>
+                ${done ? '<span class="watched-badge">Watched</span>' : ''}
+              </div>`;
+          }).join('')}
+        </div>`;
+
+      container.appendChild(block);
+    });
+
+  } catch(e) {
+    document.getElementById('series-container').innerHTML =
+      '<div style="text-align:center;color:var(--muted);padding:80px">Connect Supabase in js/main.js to load tutorials.</div>';
+  }
+}
+
+function playVideo(seriesId, index, videos) {
+  currentSeries  = seriesId;
+  currentPlaylist= videos;
+  currentIndex   = index;
+  openModal(videos[index]);
+}
+
+function openModal(v) {
+  const modal   = document.getElementById('video-modal');
+  const wrapper = document.getElementById('video-wrapper');
+  document.getElementById('video-title').textContent = v.title;
+  document.getElementById('video-meta').textContent  =
+    (v.duration ? '⏱ ' + v.duration : '') +
+    (v.series_name ? '  •  ' + v.series_name : '');
+
+  // Render player
+  if (isYouTube(v.video_url)) {
+    wrapper.innerHTML = `<iframe src="${ytEmbedUrl(v.video_url)}"
+      frameborder="0" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+  } else {
+    wrapper.innerHTML = `<video controls autoplay>
+      <source src="${escHtml(v.video_url)}"/>
+      Your browser does not support this video format.
+    </video>`;
+  }
+
+  modal.classList.add('show');
+  markWatched(currentSeries, String(v.id));
+  refreshProgress(currentSeries, currentPlaylist);
+
+  document.getElementById('prev-btn').disabled = currentIndex === 0;
+  document.getElementById('next-btn').disabled = currentIndex === currentPlaylist.length - 1;
+}
+
+function refreshProgress(seriesId, videos) {
+  const watched = getWatched(seriesId);
+  const pct     = Math.round((watched.size / videos.length) * 100);
+  const bar     = document.getElementById('prog-' + seriesId);
+  if (bar) bar.style.width = pct + '%';
+  // Update individual items
+  videos.forEach(v => {
+    const item = document.getElementById('item-' + v.id);
+    if (!item) return;
+    const done = watched.has(String(v.id));
+    item.classList.toggle('watched', done);
+    const thumb = item.querySelector('.tutorial-thumb');
+    if (thumb) thumb.textContent = done ? '✓' : '▶';
+  });
+}
+
+document.getElementById('video-close').addEventListener('click', () => {
+  document.getElementById('video-modal').classList.remove('show');
+  document.getElementById('video-wrapper').innerHTML = '';
+});
+
+document.getElementById('prev-btn').addEventListener('click', () => {
+  if (currentIndex > 0) { currentIndex--; openModal(currentPlaylist[currentIndex]); }
+});
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (currentIndex < currentPlaylist.length - 1) { currentIndex++; openModal(currentPlaylist[currentIndex]); }
+});
+
+// Close modal clicking outside
+document.getElementById('video-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('show');
+    document.getElementById('video-wrapper').innerHTML = '';
+  }
+});
+
+loadTutorials();
+</script>
+</body>
+</html>

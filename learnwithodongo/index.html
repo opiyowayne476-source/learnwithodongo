@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LearnWithOdongo — Home</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────── -->
+<div id="sidebar-overlay"></div>
+<nav id="sidebar">
+  <button id="sidebar-close" class="sidebar-close" aria-label="Close menu">✕</button>
+  <div class="sidebar-logo">Learn<span>WithOdongo</span></div>
+  <ul class="sidebar-nav">
+    <li><a href="index.html">🏠 <span>Home</span></a></li>
+    <li><a href="documents.html">📄 <span>Documents</span></a></li>
+    <li><a href="tutorials.html">🎬 <span>Tutorials</span></a></li>
+    <li><a href="exercises.html">📝 <span>Exercises</span></a></li>
+    <li class="admin-link"><a href="admin.html">⚙️ <span>Admin</span></a></li>
+  </ul>
+</nav>
+
+<!-- ── Topbar ──────────────────────────────────────────── -->
+<header id="topbar">
+  <button id="menu-btn" aria-label="Open menu">☰</button>
+  <span class="topbar-title">Learn<span>WithOdongo</span></span>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────── -->
+<main class="main-content">
+
+  <!-- SINGLE PROFILE CARD - Picture Left, ALL Content Right -->
+  <div class="profile-card-full">
+    <!-- LEFT SIDE: Picture -->
+    <div class="profile-card-left">
+      <div class="profile-avatar">
+        <img id="profile-pic" src="" alt="Jezreel Mac Odongo"/>
+        <div class="placeholder" id="profile-placeholder">JO</div>
+      </div>
+    </div>
+    
+    <!-- RIGHT SIDE: ALL Content (Profile + About merged) -->
+    <div class="profile-card-right">
+      <!-- Profile details -->
+      <div class="profile-name" id="profile-display-name">Jezreel Mac Odongo</div>
+      <div class="profile-role" id="profile-display-role">🎓 Nursing Student &amp; Educator</div>
+      <p class="profile-bio" id="profile-display-bio">
+        Passionate about making nursing and healthcare knowledge accessible to every student.
+        Through this platform, I share study resources, video lessons, and practice exercises
+        to help you ace your exams and become an excellent healthcare professional.
+      </p>
+      
+      <!-- About Platform section (merged here) -->
+      <div class="profile-about-section">
+        <h3>About this platform</h3>
+        <p>
+          LearnWithOdongo is your dedicated study companion — built to give nursing students
+          free, structured access to quality learning materials, all in one place.
+        </p>
+        <ul class="profile-feature-list">
+          <li>Browse &amp; download study documents and research papers</li>
+          <li>Watch curated nursing tutorial series with progress tracking</li>
+          <li>Attempt quizzes and get your results instantly</li>
+          <li>Read articles and blogs written for nursing students</li>
+          <li>Completely free — no sign-up required</li>
+        </ul>
+      </div>
+      
+      <!-- Stats (moved inside) -->
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="stat-docs">—</span>
+          <span class="profile-stat-label">Documents</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="stat-vids">—</span>
+          <span class="profile-stat-label">Tutorials</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="stat-quiz">—</span>
+          <span class="profile-stat-label">Quizzes</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="stat-arts">—</span>
+          <span class="profile-stat-label">Articles</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent content -->
+  <div class="page-header">
+    <h1>Recent Uploads</h1>
+    <p>Freshly added content for you to explore</p>
+  </div>
+
+  <div class="card-grid" id="recent-list">
+    <!-- Filled by JS -->
+    <div class="card" style="color:var(--muted);font-size:.9rem;grid-column:1/-1;text-align:center;padding:48px">
+      Loading recent content…
+    </div>
+  </div>
+
+  <!-- Contact section -->
+  <div class="contact-section">
+    <h2>📬 Contact &amp; Follow</h2>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <div class="contact-icon">📞</div>
+        <div>
+          <strong>Phone</strong><br/>
+          <a href="tel:+254745231421" style="color:rgba(255,255,255,0.7)">0745 231 421</a>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <strong>Email</strong><br/>
+          <a href="mailto:odongojezreel2003@gmail.com" style="color:rgba(255,255,255,0.7)">odongojezreel2003@gmail.com</a>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🎵</div>
+        <div>
+          <strong>TikTok</strong><br/>
+          <a href="https://tiktok.com/@jezreel.inhisprime" target="_blank" style="color:rgba(255,255,255,0.7)">@jezreel.inhisprime</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── SUPABASE CONFIG ───────────────────────────────────────
+const SUPABASE_URL = 'https://lbtpidkuqdeechglltzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidHBpZGt1cWRlZWNoZ2xsdHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NjIyMDgsImV4cCI6MjA5NzQzODIwOH0.5BJPGNlmPsPUFIt9Xz5JcYeKJ0M5han9lmWhdbkcFKc';
+
+// ── SIDEBAR ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const menuBtn = document.getElementById('menu-btn');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  if (menuBtn) {
+    menuBtn.addEventListener('click', function() {
+      sidebar.classList.add('open');
+      if (overlay) overlay.classList.add('show');
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('show');
+    });
+  }
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  }
+});
+
+// ── SUPABASE FETCH ────────────────────────────────────────
+async function sbFetch(path, options = {}) {
+  const url = SUPABASE_URL + '/rest/v1/' + path;
+  const res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+    },
+    ...options
+  });
+  if (!res.ok) {
+    throw new Error(await res.text() || res.statusText);
+  }
+  return res.json();
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, function(m) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+}
+
+// ── LOAD PROFILE PICTURE ──────────────────────────────────
+async function loadProfile() {
+  // Load from localStorage
+  const saved = localStorage.getItem('profile_data');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.name) document.getElementById('profile-display-name').textContent = data.name;
+      if (data.role) document.getElementById('profile-display-role').textContent = data.role;
+      if (data.bio) document.getElementById('profile-display-bio').textContent = data.bio;
+    } catch(e) {}
+  }
+  
+  // Load profile picture from Supabase
+  try {
+    const url = `${SUPABASE_URL}/storage/v1/object/public/profile/profile-pic.jpg`;
+    const res = await fetch(url, { method: 'HEAD' });
+    if (res.ok) {
+      const img = document.getElementById('profile-pic');
+      img.src = url + '?t=' + Date.now();
+      img.style.display = 'block';
+      document.getElementById('profile-placeholder').style.display = 'none';
+    }
+  } catch(e) {
+    console.log('No profile picture found');
+  }
+}
+
+// ── LOAD HOME PAGE DATA ──────────────────────────────────
+async function loadHomePage() {
+  try {
+    const [docs, vids, quizzes, articles] = await Promise.all([
+      sbFetch('documents?select=id&limit=1000'),
+      sbFetch('tutorials?select=id&limit=1000'),
+      sbFetch('quizzes?select=id&limit=1000'),
+      sbFetch('articles?select=id&limit=1000'),
+    ]);
+    document.getElementById('stat-docs').textContent = docs.length;
+    document.getElementById('stat-vids').textContent = vids.length;
+    document.getElementById('stat-quiz').textContent = quizzes.length;
+    document.getElementById('stat-arts').textContent = articles.length;
+
+    // Recent: last 6 documents + articles combined
+    const recentDocs = await sbFetch('documents?select=*&order=created_at.desc&limit=3');
+    const recentArts = await sbFetch('articles?select=*&order=created_at.desc&limit=3');
+    const list = document.getElementById('recent-list');
+    list.innerHTML = '';
+
+    recentDocs.forEach(function(d) {
+      list.innerHTML += `
+        <div class="doc-card">
+          <div class="doc-icon">📄</div>
+          <div class="doc-info">
+            <h3>${escHtml(d.title)}</h3>
+            <p>${escHtml(d.description || '')}</p>
+            <p class="doc-meta">📅 ${new Date(d.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="doc-actions">
+            <a href="documents.html" class="btn btn-secondary btn-sm">View</a>
+          </div>
+        </div>`;
+    });
+
+    recentArts.forEach(function(a) {
+      list.innerHTML += `
+        <div class="article-card">
+          <h3>${escHtml(a.title)}</h3>
+          <p>${escHtml((a.content || '').slice(0, 120))}…</p>
+          <span class="article-meta">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
+        </div>`;
+    });
+
+    if (list.innerHTML === '') {
+      list.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);grid-column:1/-1;padding:40px">No content yet — check back soon!</div>';
+    }
+  } catch(e) {
+    // Supabase not connected yet — show placeholder
+    document.getElementById('stat-docs').textContent = '0';
+    document.getElementById('stat-vids').textContent = '0';
+    document.getElementById('stat-quiz').textContent = '0';
+    document.getElementById('stat-arts').textContent = '0';
+    document.getElementById('recent-list').innerHTML =
+      '<div class="card" style="text-align:center;color:var(--muted);grid-column:1/-1;padding:40px">Connect Supabase in js/main.js to see live content.</div>';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadProfile();
+  loadHomePage();
+});
+</script>
+</body>
+</html>

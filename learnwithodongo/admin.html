@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LearnWithOdongo — Admin</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"/>
+</head>
+<body>
+
+<!-- ── Password gate (shown first) ──────────────────── -->
+<div class="admin-gate" id="admin-gate">
+  <div class="admin-login-box">
+    <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to continue</p>
+    <p id="admin-error" class="admin-error" style="display:none">Incorrect password. Try again.</p>
+    <input type="password" id="admin-pass" class="admin-input" placeholder="Password" autocomplete="current-password"/>
+    <button class="btn btn-primary" style="width:100%" onclick="checkPassword()">Enter</button>
+    <p style="margin-top:16px;font-size:0.8rem;color:var(--muted)">
+      <a href="index.html">← Back to site</a>
+    </p>
+  </div>
+</div>
+
+<!-- ── Admin Panel ─── -->
+<div id="admin-panel" class="admin-panel" style="display:none">
+
+  <div id="sidebar-overlay"></div>
+  <nav id="sidebar">
+    <button id="sidebar-close" class="sidebar-close">✕</button>
+    <div class="sidebar-logo">Learn<span>WithOdongo</span></div>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">🏠 <span>Home</span></a></li>
+      <li><a href="documents.html">📄 <span>Documents</span></a></li>
+      <li><a href="tutorials.html">🎬 <span>Tutorials</span></a></li>
+      <li><a href="exercises.html">📝 <span>Exercises</span></a></li>
+      <li class="admin-link"><a href="admin.html">⚙️ <span>Admin</span></a></li>
+    </ul>
+  </nav>
+
+  <header id="topbar">
+    <button id="menu-btn">☰</button>
+    <span class="topbar-title">⚙️ Admin <span>Dashboard</span></span>
+    <button class="btn btn-secondary btn-sm" onclick="logout()" style="margin-left:auto">Logout</button>
+  </header>
+
+  <main class="main-content">
+
+    <div class="page-header">
+      <h1>Admin Dashboard</h1>
+      <p>Upload and manage all site content from here</p>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="admin-tabs" id="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab(0)">📄 Documents</button>
+      <button class="admin-tab" onclick="switchTab(1)">✍️ Articles</button>
+      <button class="admin-tab" onclick="switchTab(2)">🎬 Tutorials</button>
+      <button class="admin-tab" onclick="switchTab(3)">📝 Quizzes</button>
+      <button class="admin-tab" onclick="switchTab(4)">📋 Papers</button>
+      <button class="admin-tab" onclick="switchTab(5)">👤 Profile</button>
+    </div>
+
+    <!-- ── DOCUMENTS ── -->
+    <div class="admin-section active" id="sec-docs">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">Upload a Document</h3>
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" id="doc-title" class="form-input" placeholder="e.g. Nursing Pharmacology Notes"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="doc-desc" class="form-input" placeholder="Short description"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input type="text" id="doc-cat" class="form-input" placeholder="e.g. Pharmacology, Anatomy…"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File (PDF, Word, etc.)</label>
+          <div class="upload-area" onclick="document.getElementById('doc-file').click()">
+            <div class="upload-icon">📁</div>
+            <p id="doc-file-name">Click to choose a file</p>
+          </div>
+          <input type="file" id="doc-file" style="display:none" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+            onchange="document.getElementById('doc-file-name').textContent = this.files[0]?.name || 'Click to choose a file'"/>
+        </div>
+        <button class="btn btn-primary" onclick="uploadDoc()">⬆ Upload Document</button>
+        <span id="doc-upload-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+
+      <h3 style="margin-bottom:14px;color:var(--navy)">All Documents</h3>
+      <div id="admin-docs-list"><div style="color:var(--muted);padding:20px">Loading…</div></div>
+    </div>
+
+    <!-- ── ARTICLES ── -->
+    <div class="admin-section" id="sec-arts">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">Write an Article / Blog Post</h3>
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" id="art-title" class="form-input" placeholder="Article title"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content *</label>
+          <textarea id="art-content" class="form-textarea" rows="8" placeholder="Write your article here…"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="postArticle()">📤 Publish Article</button>
+        <span id="art-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+      <h3 style="margin-bottom:14px;color:var(--navy)">All Articles</h3>
+      <div id="admin-arts-list"><div style="color:var(--muted);padding:20px">Loading…</div></div>
+    </div>
+
+    <!-- ── TUTORIALS ── -->
+    <div class="admin-section" id="sec-tuts">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">Add a Tutorial Video</h3>
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" id="tut-title" class="form-input" placeholder="Video title"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Series Name (group videos together)</label>
+          <input type="text" id="tut-series" class="form-input" placeholder="e.g. Anatomy Series 1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Order in Series (number)</label>
+          <input type="number" id="tut-order" class="form-input" value="1" min="1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (optional, e.g. 12:30)</label>
+          <input type="text" id="tut-dur" class="form-input" placeholder="12:30"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="tut-desc" class="form-input" placeholder="Short description"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">YouTube URL (recommended — paste the YouTube link)</label>
+          <input type="url" id="tut-yt" class="form-input" placeholder="https://www.youtube.com/watch?v=…"/>
+        </div>
+        <p style="color:var(--muted);font-size:.82rem;margin:-8px 0 16px">
+          Or upload a video file below (large files may be slow — YouTube is recommended for videos)
+        </p>
+        <div class="form-group">
+          <label class="form-label">Video File (MP4, WebM, etc.)</label>
+          <div class="upload-area" onclick="document.getElementById('tut-file').click()">
+            <div class="upload-icon">🎬</div>
+            <p id="tut-file-name">Click to choose a video file</p>
+          </div>
+          <input type="file" id="tut-file" style="display:none" accept="video/*"
+            onchange="document.getElementById('tut-file-name').textContent = this.files[0]?.name || 'Click to choose a video file'"/>
+        </div>
+        <button class="btn btn-primary" onclick="addTutorial()">⬆ Add Tutorial</button>
+        <span id="tut-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+      <h3 style="margin-bottom:14px;color:var(--navy)">All Tutorials</h3>
+      <div id="admin-tuts-list"><div style="color:var(--muted);padding:20px">Loading…</div></div>
+    </div>
+
+    <!-- ── QUIZZES ── -->
+    <div class="admin-section" id="sec-quiz">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">Create a Quiz</h3>
+        <div class="form-group">
+          <label class="form-label">Quiz Title *</label>
+          <input type="text" id="qz-title" class="form-input" placeholder="e.g. Pharmacology Quiz 1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="qz-desc" class="form-input" placeholder="Topic or instructions"/>
+        </div>
+
+        <div id="qz-questions-builder">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px">
+            <h4 style="color:var(--navy)">Questions</h4>
+            <button class="btn btn-secondary btn-sm" onclick="addQuestion()">+ Add Question</button>
+          </div>
+          <div id="qz-q-list"></div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:16px" onclick="saveQuiz()">💾 Save &amp; Publish Quiz</button>
+        <span id="qz-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+
+      <h3 style="margin-bottom:14px;color:var(--navy)">All Quizzes</h3>
+      <div id="admin-quiz-list"><div style="color:var(--muted);padding:20px">Loading…</div></div>
+    </div>
+
+    <!-- ── QUESTION PAPERS ── -->
+    <div class="admin-section" id="sec-papers">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">Upload a Question Paper</h3>
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" id="pap-title" class="form-input" placeholder="e.g. End of Semester Paper 2024"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="pap-desc" class="form-input" placeholder="Short description"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File</label>
+          <div class="upload-area" onclick="document.getElementById('pap-file').click()">
+            <div class="upload-icon">📋</div>
+            <p id="pap-file-name">Click to choose a file</p>
+          </div>
+          <input type="file" id="pap-file" style="display:none" accept=".pdf,.doc,.docx"
+            onchange="document.getElementById('pap-file-name').textContent = this.files[0]?.name || 'Click to choose a file'"/>
+        </div>
+        <button class="btn btn-primary" onclick="uploadPaper()">⬆ Upload Paper</button>
+        <span id="pap-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+      <h3 style="margin-bottom:14px;color:var(--navy)">All Papers</h3>
+      <div id="admin-papers-list"><div style="color:var(--muted);padding:20px">Loading…</div></div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <div class="admin-section" id="sec-profile">
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:18px;color:var(--navy)">👤 Profile Settings</h3>
+        <div class="form-group">
+          <label class="form-label">Profile Picture</label>
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px">
+            <div id="profile-preview" style="width:100px;height:100px;border-radius:50%;overflow:hidden;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.5rem;border:3px solid var(--teal);">
+              <img id="profile-preview-img" src="" alt="Profile" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+              <span id="profile-preview-placeholder">👤</span>
+            </div>
+            <div style="flex:1">
+              <div class="upload-area" onclick="document.getElementById('profile-file').click()" style="padding:16px;cursor:pointer;">
+                <div class="upload-icon">📸</div>
+                <p id="profile-file-name">Click to choose a profile picture</p>
+                <p style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Recommended: Square image, at least 200x200px</p>
+              </div>
+              <input type="file" id="profile-file" style="display:none" accept="image/*"
+                onchange="document.getElementById('profile-file-name').textContent = this.files[0]?.name || 'Click to choose a profile picture'; previewProfilePic(this);"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="uploadProfilePic()">⬆ Upload Profile Picture</button>
+          <span id="profile-upload-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+        </div>
+        
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label">Display Name</label>
+          <input type="text" id="profile-name" class="form-input" value="Jezreel Mac Odongo"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role/Title</label>
+          <input type="text" id="profile-role" class="form-input" value="🎓 Nursing Student &amp; Educator"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio</label>
+          <textarea id="profile-bio" class="form-textarea" rows="3">Passionate about making nursing and healthcare knowledge accessible to every student. Through this platform, I share study resources, video lessons, and practice exercises to help you ace your exams and become an excellent healthcare professional.</textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+        <span id="profile-save-status" style="margin-left:12px;font-size:.85rem;color:var(--muted)"></span>
+      </div>
+    </div>
+
+  </main>
+</div><!-- end admin-panel -->
+
+<script>
+// ============================================================
+// ALL JAVASCRIPT IN ONE PLACE (no external dependencies)
+// ============================================================
+
+// ── SUPABASE CONFIG ───────────────────────────────────────
+const SUPABASE_URL = 'https://lbtpidkuqdeechglltzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidHBpZGt1cWRlZWNoZ2xsdHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NjIyMDgsImV4cCI6MjA5NzQzODIwOH0.5BJPGNlmPsPUFIt9Xz5JcYeKJ0M5han9lmWhdbkcFKc';
+
+// ── PASSWORD ────────────────────────────────────────────
+const ADMIN_PASSWORD = 'odongo2024';
+
+function checkPassword() {
+  const val = document.getElementById('admin-pass').value;
+  if (val === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin_auth', '1');
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    loadAllAdminData();
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+    document.getElementById('admin-pass').value = '';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_auth');
+  location.reload();
+}
+
+// Auto-unlock if already authenticated
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    loadAllAdminData();
+  });
+}
+
+// ── SIDEBAR ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const menuBtn = document.getElementById('menu-btn');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  if (menuBtn) {
+    menuBtn.addEventListener('click', function() {
+      sidebar.classList.add('open');
+      if (overlay) overlay.classList.add('show');
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('show');
+    });
+  }
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  }
+});
+
+// ── TOAST ──────────────────────────────────────────────────
+function showToast(msg) {
+  let toast = document.getElementById('global-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'global-toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:8px;z-index:9999;opacity:0;transition:opacity 0.3s;font-size:0.9rem;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(function() { toast.style.opacity = '0'; }, 3000);
+}
+
+// ── SUPABASE FETCH ────────────────────────────────────────
+async function sbFetch(path, options = {}) {
+  const url = SUPABASE_URL + '/rest/v1/' + path;
+  const res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || 'return=representation',
+    },
+    ...options
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+  return options.method === 'DELETE' ? null : res.json();
+}
+
+// ── UPLOAD TO STORAGE ─────────────────────────────────────
+async function uploadToStorage(bucket, file, path) {
+  if (!file) throw new Error('No file selected');
+  
+  const cleanPath = path.replace(/^\/+/, '');
+  const bucketUrl = `${SUPABASE_URL}/storage/v1/object/${bucket}/${cleanPath}`;
+  
+  console.log('Uploading to:', bucketUrl);
+  console.log('File:', file.name, file.type, file.size);
+  
+  const res = await fetch(bucketUrl, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': file.type,
+    },
+    body: file
+  });
+  
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Upload error:', text);
+    if (res.status === 404) {
+      throw new Error(`Bucket "${bucket}" not found. Create it in Supabase Dashboard → Storage.`);
+    }
+    if (res.status === 403) {
+      throw new Error(`Access denied. Make sure bucket "${bucket}" is public.`);
+    }
+    throw new Error(`Upload failed (${res.status}): ${text}`);
+  }
+  
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
+}
+
+// ── TAB SWITCHING ────────────────────────────────────────
+const adminSections = ['sec-docs','sec-arts','sec-tuts','sec-quiz','sec-papers','sec-profile'];
+function switchTab(i) {
+  document.querySelectorAll('.admin-tab').forEach(function(t, j) {
+    t.classList.toggle('active', i === j);
+  });
+  adminSections.forEach(function(id, j) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', i === j);
+  });
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, function(m) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+}
+
+// ── DOCUMENTS ───────────────────────────────────────────
+async function uploadDoc() {
+  const title = document.getElementById('doc-title').value.trim();
+  const desc  = document.getElementById('doc-desc').value.trim();
+  const cat   = document.getElementById('doc-cat').value.trim();
+  const file  = document.getElementById('doc-file').files[0];
+  const status = document.getElementById('doc-upload-status');
+
+  if (!title) { alert('Please enter a title.'); return; }
+  if (!file)  { alert('Please choose a file.'); return; }
+  status.textContent = 'Uploading…';
+
+  try {
+    const path    = `docs/${Date.now()}_${file.name}`;
+    const fileUrl = await uploadToStorage('documents', file, path);
+    await sbFetch('documents', {
+      method: 'POST',
+      body: JSON.stringify({ title, description: desc, category: cat, file_url: fileUrl, type: file.type })
+    });
+    status.textContent = '✅ Uploaded!';
+    status.style.color = 'var(--teal)';
+    document.getElementById('doc-title').value = '';
+    document.getElementById('doc-desc').value  = '';
+    document.getElementById('doc-cat').value   = '';
+    document.getElementById('doc-file').value  = '';
+    document.getElementById('doc-file-name').textContent = 'Click to choose a file';
+    loadAdminDocs();
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ Error: ' + e.message;
+    status.style.color = 'var(--danger)';
+    console.error(e);
+  }
+}
+
+async function loadAdminDocs() {
+  try {
+    const docs = await sbFetch('documents?select=*&order=created_at.desc');
+    const list = document.getElementById('admin-docs-list');
+    if (!docs || !docs.length) { 
+      list.innerHTML = '<div style="color:var(--muted);padding:16px">No documents yet.</div>'; 
+      return; 
+    }
+    list.innerHTML = `<table class="items-table">
+      <thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>` + docs.map(function(d) {
+        return `<tr>
+          <td>${escHtml(d.title)}</td>
+          <td>${escHtml(d.category||'—')}</td>
+          <td>${new Date(d.created_at).toLocaleDateString()}</td>
+          <td><a href="${escHtml(d.file_url)}" target="_blank" class="btn btn-secondary btn-sm">View</a>
+              <button class="btn btn-danger btn-sm" onclick="deleteItem('documents','${d.id}', loadAdminDocs)">Delete</button></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  } catch(e) {
+    document.getElementById('admin-docs-list').innerHTML = '<div style="color:var(--muted)">Error loading documents: ' + e.message + '</div>';
+  }
+}
+
+// ── ARTICLES ─────────────────────────────────────────────
+async function postArticle() {
+  const title   = document.getElementById('art-title').value.trim();
+  const content = document.getElementById('art-content').value.trim();
+  const status  = document.getElementById('art-status');
+  if (!title || !content) { alert('Title and content required.'); return; }
+  status.textContent = 'Saving…';
+  try {
+    await sbFetch('articles', { method:'POST', body: JSON.stringify({ title, content }) });
+    status.textContent = '✅ Published!';
+    status.style.color = 'var(--teal)';
+    document.getElementById('art-title').value   = '';
+    document.getElementById('art-content').value = '';
+    loadAdminArts();
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+async function loadAdminArts() {
+  try {
+    const arts = await sbFetch('articles?select=*&order=created_at.desc');
+    const list = document.getElementById('admin-arts-list');
+    if (!arts || !arts.length) { 
+      list.innerHTML = '<div style="color:var(--muted);padding:16px">No articles yet.</div>'; 
+      return; 
+    }
+    list.innerHTML = `<table class="items-table">
+      <thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>` + arts.map(function(a) {
+        return `<tr>
+          <td>${escHtml(a.title)}</td>
+          <td>${new Date(a.created_at).toLocaleDateString()}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteItem('articles','${a.id}', loadAdminArts)">Delete</button></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  } catch(e) {
+    document.getElementById('admin-arts-list').innerHTML = '<div style="color:var(--muted)">Error loading articles: ' + e.message + '</div>';
+  }
+}
+
+// ── TUTORIALS ─────────────────────────────────────────────
+async function addTutorial() {
+  const title   = document.getElementById('tut-title').value.trim();
+  const series  = document.getElementById('tut-series').value.trim();
+  const order   = parseInt(document.getElementById('tut-order').value) || 1;
+  const dur     = document.getElementById('tut-dur').value.trim();
+  const desc    = document.getElementById('tut-desc').value.trim();
+  const ytUrl   = document.getElementById('tut-yt').value.trim();
+  const file    = document.getElementById('tut-file').files[0];
+  const status  = document.getElementById('tut-status');
+
+  if (!title) { alert('Title required.'); return; }
+  if (!ytUrl && !file) { alert('Provide a YouTube URL or upload a video file.'); return; }
+
+  status.textContent = 'Saving…';
+  try {
+    let videoUrl = ytUrl;
+    if (!ytUrl && file) {
+      if (file.size > 50 * 1024 * 1024) {
+        status.textContent = '❌ File too large! Max 50MB.';
+        status.style.color = 'var(--danger)';
+        return;
+      }
+      status.textContent = 'Uploading video…';
+      const ext = file.name.split('.').pop();
+      const path = `tutorials/${Date.now()}_${title.replace(/\s+/g, '_')}.${ext}`;
+      videoUrl = await uploadToStorage('tutorials', file, path);
+    }
+    await sbFetch('tutorials', { method:'POST', body: JSON.stringify({
+      title, series_name: series || 'Standalone', order_num: order,
+      duration: dur, description: desc, video_url: videoUrl
+    })});
+    status.textContent = '✅ Added!';
+    status.style.color = 'var(--teal)';
+    ['tut-title','tut-series','tut-dur','tut-desc','tut-yt'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('tut-order').value = '1';
+    document.getElementById('tut-file').value = '';
+    document.getElementById('tut-file-name').textContent = 'Click to choose a video file';
+    loadAdminTuts();
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = 'var(--danger)';
+    console.error(e);
+  }
+}
+
+async function loadAdminTuts() {
+  try {
+    const tuts = await sbFetch('tutorials?select=*&order=series_name,order_num');
+    const list = document.getElementById('admin-tuts-list');
+    if (!tuts || !tuts.length) { 
+      list.innerHTML = '<div style="color:var(--muted);padding:16px">No tutorials yet.</div>'; 
+      return; 
+    }
+    list.innerHTML = `<table class="items-table">
+      <thead><tr><th>Title</th><th>Series</th><th>#</th><th>Duration</th><th>Actions</th></tr></thead>
+      <tbody>` + tuts.map(function(t) {
+        return `<tr>
+          <td>${escHtml(t.title)}</td>
+          <td>${escHtml(t.series_name||'—')}</td>
+          <td>${t.order_num||'—'}</td>
+          <td>${escHtml(t.duration||'—')}</td>
+          <td><a href="${escHtml(t.video_url)}" target="_blank" class="btn btn-secondary btn-sm">View</a>
+              <button class="btn btn-danger btn-sm" onclick="deleteItem('tutorials','${t.id}', loadAdminTuts)">Delete</button></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  } catch(e) {
+    document.getElementById('admin-tuts-list').innerHTML = '<div style="color:var(--muted)">Error loading tutorials: ' + e.message + '</div>';
+  }
+}
+
+// ── QUIZZES ───────────────────────────────────────────────
+let qzQuestions = [];
+
+function addQuestion() {
+  qzQuestions.push({ question: '', options: ['','','',''], correctOptions: [] });
+  renderQBuilder();
+}
+
+function renderQBuilder() {
+  const container = document.getElementById('qz-q-list');
+  container.innerHTML = qzQuestions.map(function(q, i) {
+    return `<div style="background:var(--cream);border-radius:10px;padding:18px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:.9rem">Question ${i+1}</strong>
+        <button class="btn btn-danger btn-sm" onclick="removeQuestion(${i})">Remove</button>
+      </div>
+      <input class="form-input" style="margin-bottom:12px" placeholder="Question text"
+        value="${escHtml(q.question)}" oninput="qzQuestions[${i}].question=this.value"/>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Options (tick the correct one/s):</p>
+      ${q.options.map(function(opt, oi) {
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <input type="checkbox" ${q.correctOptions.includes(oi)?'checked':''}
+            onchange="toggleCorrect(${i},${oi},this.checked)" style="accent-color:var(--teal);width:16px;height:16px"/>
+          <input class="form-input" placeholder="Option ${oi+1}" value="${escHtml(opt)}"
+            oninput="qzQuestions[${i}].options[${oi}]=this.value" style="flex:1"/>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function toggleCorrect(qi, oi, checked) {
+  const arr = qzQuestions[qi].correctOptions;
+  if (checked) { if (!arr.includes(oi)) arr.push(oi); }
+  else { qzQuestions[qi].correctOptions = arr.filter(function(x) { return x !== oi; }); }
+}
+
+function removeQuestion(i) { qzQuestions.splice(i,1); renderQBuilder(); }
+
+async function saveQuiz() {
+  const title  = document.getElementById('qz-title').value.trim();
+  const desc   = document.getElementById('qz-desc').value.trim();
+  const status = document.getElementById('qz-status');
+  if (!title) { alert('Quiz title required.'); return; }
+  if (!qzQuestions.length) { alert('Add at least one question.'); return; }
+  status.textContent = 'Saving…';
+  try {
+    const [quiz] = await sbFetch('quizzes', { method:'POST', body: JSON.stringify({ title, description:desc })});
+    for (let i=0; i<qzQuestions.length; i++) {
+      const q = qzQuestions[i];
+      await sbFetch('quiz_questions', { method:'POST', body: JSON.stringify({
+        quiz_id: quiz.id,
+        question: q.question,
+        options: JSON.stringify(q.options.filter(function(o) { return o.trim(); })),
+        correct_options: JSON.stringify(q.correctOptions),
+        order_num: i+1
+      })});
+    }
+    status.textContent = '✅ Quiz published!';
+    status.style.color = 'var(--teal)';
+    document.getElementById('qz-title').value = '';
+    document.getElementById('qz-desc').value  = '';
+    qzQuestions = [];
+    renderQBuilder();
+    loadAdminQuiz();
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+async function loadAdminQuiz() {
+  try {
+    const quizzes = await sbFetch('quizzes?select=*&order=created_at.desc');
+    const list    = document.getElementById('admin-quiz-list');
+    if (!quizzes || !quizzes.length) { 
+      list.innerHTML = '<div style="color:var(--muted);padding:16px">No quizzes yet.</div>'; 
+      return; 
+    }
+    list.innerHTML = `<table class="items-table">
+      <thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>` + quizzes.map(function(q) {
+        return `<tr>
+          <td>${escHtml(q.title)}</td>
+          <td>${new Date(q.created_at).toLocaleDateString()}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteItem('quizzes','${q.id}', loadAdminQuiz)">Delete</button></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  } catch(e) {
+    document.getElementById('admin-quiz-list').innerHTML = '<div style="color:var(--muted)">Error loading quizzes: ' + e.message + '</div>';
+  }
+}
+
+// ── QUESTION PAPERS ───────────────────────────────────────
+async function uploadPaper() {
+  const title  = document.getElementById('pap-title').value.trim();
+  const desc   = document.getElementById('pap-desc').value.trim();
+  const file   = document.getElementById('pap-file').files[0];
+  const status = document.getElementById('pap-status');
+  if (!title) { alert('Title required.'); return; }
+  if (!file)  { alert('Choose a file.'); return; }
+  status.textContent = 'Uploading…';
+  try {
+    const path    = `papers/${Date.now()}_${file.name}`;
+    const fileUrl = await uploadToStorage('papers', file, path);
+    await sbFetch('question_papers', { method:'POST', body: JSON.stringify({ title, description:desc, file_url:fileUrl })});
+    status.textContent = '✅ Uploaded!';
+    status.style.color = 'var(--teal)';
+    document.getElementById('pap-title').value = '';
+    document.getElementById('pap-desc').value = '';
+    document.getElementById('pap-file').value = '';
+    document.getElementById('pap-file-name').textContent = 'Click to choose a file';
+    loadAdminPapers();
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+async function loadAdminPapers() {
+  try {
+    const papers = await sbFetch('question_papers?select=*&order=created_at.desc');
+    const list   = document.getElementById('admin-papers-list');
+    if (!papers || !papers.length) { 
+      list.innerHTML = '<div style="color:var(--muted);padding:16px">No papers yet.</div>'; 
+      return; 
+    }
+    list.innerHTML = `<table class="items-table">
+      <thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>` + papers.map(function(p) {
+        return `<tr>
+          <td>${escHtml(p.title)}</td>
+          <td>${new Date(p.created_at).toLocaleDateString()}</td>
+          <td><a href="${escHtml(p.file_url)}" target="_blank" class="btn btn-secondary btn-sm">View</a>
+              <button class="btn btn-danger btn-sm" onclick="deleteItem('question_papers','${p.id}', loadAdminPapers)">Delete</button></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  } catch(e) {
+    document.getElementById('admin-papers-list').innerHTML = '<div style="color:var(--muted)">Error loading papers: ' + e.message + '</div>';
+  }
+}
+
+// ── GENERIC DELETE ────────────────────────────────────────
+async function deleteItem(table, id, reloadFn) {
+  if (!confirm('Delete this item? This cannot be undone.')) return;
+  try {
+    await sbFetch(table + '?id=eq.' + id, { method:'DELETE', prefer:'return=minimal' });
+    showToast('Deleted successfully.');
+    reloadFn();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+// ── PROFILE ───────────────────────────────────────────────
+// In admin.html, update the profile preview function
+function previewProfilePic(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('profile-preview-img').src = e.target.result;
+    document.getElementById('profile-preview-img').style.display = 'block';
+    document.getElementById('profile-preview-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Load existing profile picture in admin
+async function loadAdminProfile() {
+  try {
+    const url = `${SUPABASE_URL}/storage/v1/object/public/profile/profile-pic.jpg`;
+    const res = await fetch(url, { method: 'HEAD' });
+    if (res.ok) {
+      document.getElementById('profile-preview-img').src = url + '?t=' + Date.now();
+      document.getElementById('profile-preview-img').style.display = 'block';
+      document.getElementById('profile-preview-placeholder').style.display = 'none';
+    }
+  } catch(e) {
+    console.log('No profile picture found');
+  }
+  
+  // Load profile data from localStorage
+  const saved = localStorage.getItem('profile_data');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.name) document.getElementById('profile-name').value = data.name;
+      if (data.role) document.getElementById('profile-role').value = data.role;
+      if (data.bio) document.getElementById('profile-bio').value = data.bio;
+    } catch(e) {}
+  }
+}
+
+// Call this in loadAllAdminData()
+function loadAllAdminData() {
+  loadAdminDocs();
+  loadAdminArts();
+  loadAdminTuts();
+  loadAdminQuiz();
+  loadAdminPapers();
+  loadAdminProfile();
+  renderQBuilder();
+}
+
+async function uploadProfilePic() {
+  const file = document.getElementById('profile-file').files[0];
+  const status = document.getElementById('profile-upload-status');
+  
+  if (!file) { alert('Please choose a picture.'); return; }
+  if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+  
+  status.textContent = 'Uploading…';
+  try {
+    const path = 'profile-pic.jpg';
+    const url = await uploadToStorage('profile', file, path);
+    status.textContent = '✅ Profile picture uploaded!';
+    status.style.color = 'var(--teal)';
+    document.getElementById('profile-preview-img').src = url + '?t=' + Date.now();
+    document.getElementById('profile-preview-img').style.display = 'block';
+    document.getElementById('profile-preview-placeholder').style.display = 'none';
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ Error: ' + e.message;
+    status.style.color = 'var(--danger)';
+    console.error(e);
+  }
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profile-name').value.trim();
+  const role = document.getElementById('profile-role').value.trim();
+  const bio = document.getElementById('profile-bio').value.trim();
+  const status = document.getElementById('profile-save-status');
+  
+  if (!name) { alert('Name is required.'); return; }
+  
+  status.textContent = 'Saving…';
+  try {
+    const profileData = { name, role, bio };
+    localStorage.setItem('profile_data', JSON.stringify(profileData));
+    status.textContent = '✅ Profile saved!';
+    status.style.color = 'var(--teal)';
+    setTimeout(function() { status.textContent = ''; status.style.color = ''; }, 3000);
+  } catch(e) {
+    status.textContent = '❌ Error: ' + e.message;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────
+function loadAllAdminData() {
+  loadAdminDocs();
+  loadAdminArts();
+  loadAdminTuts();
+  loadAdminQuiz();
+  loadAdminPapers();
+  renderQBuilder();
+}
+
+// ── ENTER KEY FOR PASSWORD ───────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('admin-pass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPassword();
+  });
+});
+
+// Auto-load if already authenticated
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAllAdminData();
+  });
+}
+</script>
+</body>
+</html>
